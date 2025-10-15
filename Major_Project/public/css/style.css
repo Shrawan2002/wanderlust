@@ -1,0 +1,179 @@
+/* body{
+    background-color: pink;
+} */
+
+/* navbar */
+
+
+body{
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh !important;
+}
+.container{
+    flex: 1 !important;
+}
+
+.navbar{
+    height: 4rem;
+    background-color: white;
+}
+
+.fa-compass{
+    color: #fe424d;
+    font-size: 2rem;
+}
+.nav-link{
+    color: #222222 !important;
+}
+
+/* footer */
+.f-info-links a {
+      text-decoration: none;
+      color: #222222;
+}
+
+.f-info-links a:hover{
+    text-decoration: underline;
+    /* color: #fe424d; */
+}
+
+.f-info-links,
+.f-info-socials, .f-info-brand{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.f-info-socials i{
+    margin-right: 2rem;
+    font-size: 1.3rem;
+}
+.f-info {
+     text-align: center;
+    display: flex;
+    height: 6rem;
+    background-color: #ebebeb;
+    flex-wrap: wrap;
+    justify-content: center;
+    justify-content: space-evenly;
+}
+
+/* Cards */
+.listing-card{
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.card-img-top{
+    border-radius: 1rem;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+
+.card-body{
+    padding: 0.2rem !important;
+    margin: 0 !important;
+
+}
+
+.card-text{
+    font-weight: 400;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.listings-link{
+    text-decoration: none;
+}
+
+/* card Effect */
+
+.card-img-overlay{
+    opacity: 0;
+}
+
+.card-img-overlay:hover{
+    opacity: 0.2;
+    background-color: white;
+}
+
+.add-btn{
+    background-color: #fe424d;
+    border: none;
+}
+
+/* Edit page */
+
+.edit-btn{
+    background-color: #fe424d;
+    border: none;
+}
+
+/* show page  */
+
+.show-img{
+    height: 28vh;
+    /* width: 50vh !important; */
+}
+
+.btns{
+    display: flex;
+}
+
+
+.listing-details {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.listing-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #222;
+}
+
+.listing-description {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 0.8rem;
+}
+
+.listing-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.8rem;
+}
+
+.currency-symbol {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.price-amount {
+  font-size: 1.4rem;
+}
+
+.per-night {
+  font-size: 0.9rem;
+  color: #717171;
+}
+
+.listing-location {
+  font-size: 0.9rem;
+  color: #717171;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+#map { 
+   height: 400px;
+   width: 80vh; 
+}
+
