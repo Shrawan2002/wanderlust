@@ -1,13 +1,47 @@
 'use client'
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { BellIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import {RootState} from "@/lib/store";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useAppDispatch } from "@/lib/hooks";
+import { logout } from "@/lib/store/authSlice";
+import { useEffect, useState } from 'react';
+import { fetchListing } from "@/lib/store/listingSlice";
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
+  const {isLoggedIn} = useSelector((state:RootState)=>state.auth);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [search, setSearch] = useState<string>('');
+  const handleLogout = async ()=>{
+    localStorage.removeItem('accessToken');
+    dispatch(logout())
+    router.push('/login');
+  }
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      dispatch(fetchListing({ page: 1, search }));
+    }
+  };
+  // useEffect(()=>{
+  //   const fetchSearchResult = async()=>{
+  //     await dispatch(fetchListing({page:1, search}))
+  //   }
+  //   fetchSearchResult();
+  // }, [search])
   return (
     <nav className="sticky top-0 z-50 w-full bg-gray-900 backdrop-blur-md border-b border-white/10">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -27,6 +61,9 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Search destinations, hotels, or guides..."
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearch}
+              value={search}
               className="w-full rounded-full bg-gray-800 px-4 py-4 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-gray-800 transition"
             />
             <svg
@@ -68,20 +105,18 @@ export default function Navbar() {
                   </Link>
                 </MenuItem>
                 <MenuItem>
-                  <Link
-                    href="/settings"
-                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    Settings
-                  </Link>
-                </MenuItem>
-                <MenuItem>
-                  <button
-                    onClick={() => setIsLoggedIn(false)}
-                    className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    Sign out
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">Sign out</AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleLogout}>Confirm</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </MenuItem>
               </MenuItems>
             </Menu>

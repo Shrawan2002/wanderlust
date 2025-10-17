@@ -4,10 +4,42 @@ const mapToken = process.env.MAP_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 
-module.exports.index = async (req,res)=>{
-    const allListings = await Listing.find({});
-    res.render("listings/index.ejs",{allListings});
-}
+// Assuming you have Listing imported
+module.exports.index = async (req, res) => {
+  try {
+    // Get page number from query params, default is 1
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3; // number of listings per page
+    const skip = (page - 1) * limit;
+
+    // Get search query from query params
+    const searchQuery = req.query.search || "";
+
+    // Build a filter object for search
+    const filter = searchQuery
+      ? { title: { $regex: searchQuery, $options: "i" } } // Case-insensitive search on 'title'
+      : {};
+
+    // Fetch listings with pagination and search filter
+    const allListings = await Listing.find(filter)
+      .skip(skip)
+      .limit(limit);
+
+    const totalListings = await Listing.countDocuments(filter);
+
+    res.status(200).json({
+      message: "Fetched listings successfully!",
+      listings: allListings,
+      totalListings,
+      currentPage: page,
+      totalPages: Math.ceil(totalListings / limit)
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 
 module.exports.renderNewForm = (req, res)=>{
     console.log(req.user);

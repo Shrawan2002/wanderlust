@@ -3,52 +3,22 @@ const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
 // const passport = require("passport");
 // const {saveRedirectUrl} = require("../middleware.js");
-const userController = require("../controllers/user.js");
+const userController = require("../controllers/userController.js");
+const authMiddleware = require('../middlewares/auth.js')
 
-
-
-router.route("/signup")
-.get( userController.renderSignupForm)
-.post( wrapAsync(userController.signup));
+router.post("/signup", wrapAsync(userController.signup));
 
 
 // login
-router.route("/login")
-.get(userController.renderLoginForm)
-.post(userController.login);
+router.post("/login", userController.login);
+
+//me
+router.get('/me', authMiddleware, userController.me);
+
+// // logout route
+// router.get("/logout",userController.logout);
 
 
-// logout route
-router.get("/logout",userController.logout);
-
-
-router.get("/me", userController.curLoggedIn);
-
-  
-// signup route
-// router.get("/signup", userController.renderSignupForm);
-// router.post("/signup", wrapAsync(userController.signup));
-
-
-// login route
-
-// router.get("/login", userController.renderLoginForm)
-
-// login ke bad passport by default req.session ke value ko reset kar deta hai
-// router.post("/login",
-//   saveRedirectUrl,
-//   passport.authenticate("local",{
-//     failureRedirect: "/login", 
-//     failureFlash: true,
-// }),
-// userController.login
-
-// );
-
-// logout route
-// router.get("/logout",userController.logout)
-
-
-
+// router.get("/me", userController.curLoggedIn);
 
 module.exports = router;

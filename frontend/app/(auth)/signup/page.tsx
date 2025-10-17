@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Formik } from "formik"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { toFormikValidationSchema } from "zod-formik-adapter"
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from "@/lib/hooks"
+import { useRouter } from "next/navigation"
 import {
   Card,
   CardContent,
@@ -17,6 +20,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+
+import {RootState} from "@/lib/store"
+import {signupUser} from "@/lib/store/authSlice";
 
 // ✅ 1. Zod schema with correct non-empty messages
 const userSchema = z.object({
@@ -31,17 +37,24 @@ const userSchema = z.object({
   password: z
     .string('Please enter a password')
     .min(8, "Password must be at least 8 characters long")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[!@#$%^&*]/, "Password must contain at least one special character"),
+      // .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      // .regex(/[0-9]/, "Password must contain at least one number")
+      // .regex(/[!@#$%^&*]/, "Password must contain at least one special character"),
 })
 
 // ✅ 2. Type for form data
 type UserData = z.infer<typeof userSchema>
 
 export default function SignupPage() {
-  const [serverError, setServerError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const {loading, user, error} = useSelector((state:RootState)=>state.auth)
+  const dispatch = useAppDispatch()
+  const router = useRouter();
+
+  useEffect(()=>{
+    if(user){
+      router.push('/')
+    }
+  }, [])
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
@@ -60,42 +73,15 @@ export default function SignupPage() {
             initialValues={{ username: "", email: "", password: "" }}
             validationSchema={toFormikValidationSchema(userSchema)}
             onSubmit={async (values, { setSubmitting, resetForm, setTouched, validateForm }) => {
-              
-              // 💥 FIX 2: Manually trigger touched state and validation check
-              setTouched({
-                username: true,
-                email: true,
-                password: true,
-              });
-              const errors = await validateForm(); // forces validation
-              if (Object.keys(errors).length) {
-                setSubmitting(false);
-                return; // stop submission if there are errors
-              }
-              // -----------------------------------------------------------
-
-              setServerError(null)
-              setSuccess(false)
-
               try {
-                // 🟢 Simulate backend API call
-                const res = await fetch("/api/auth/register", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(values),
-                })
-
-                if (!res.ok) {
-                  const errorData = await res.json()
-                  throw new Error(errorData.message || "Something went wrong")
+                const resultAction = await dispatch(signupUser(values))
+                console.log('singupt done: ', signupUser.fulfilled.match(resultAction))
+                if(signupUser.fulfilled.match(resultAction)){
+                  resetForm()
+                  router.push('/')
                 }
-
-                setSuccess(true)
-                resetForm()
               } catch (err: any) {
-                setServerError(err.message)
-              } finally {
-                setSubmitting(false)
+                console.log(err.message)
               }
             }}
           >
@@ -106,9 +92,13 @@ export default function SignupPage() {
               handleChange,
               handleBlur,
               handleSubmit,
-              isSubmitting,
             }) => (
               <form onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                  <p className="text-sm text-destructive font-bold text-center">
+                    {error || 'something went wrong! please try again.'}
+                  </p>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="username">Full Name</Label>
                   <Input
@@ -167,24 +157,19 @@ export default function SignupPage() {
                   )}
                 </div>
 
-                {serverError && (
-                  <p className="text-sm text-red-500 text-center">
-                    {serverError}
-                  </p>
-                )}
-                {success && (
-                  <p className="text-sm text-green-600 text-center">
-                    ✅ Registration successful!
-                  </p>
-                )}
-
                 <Button
                   type="submit"
                   className="w-full mt-2"
-                  disabled={isSubmitting}
+                  disabled={loading}
                 >
-                  {isSubmitting ? "Signing up..." : "Signup"}
+                  {loading ? (
+                    // Example loading spinner
+                    <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mx-auto"></div>
+                  ) : (
+                    'Submit'
+                  )}
                 </Button>
+
               </form>
             )}
           </Formik>

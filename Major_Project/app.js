@@ -19,62 +19,23 @@ const User = require("./models/user.js");
 const connectDB = require("./config/db.js");
 
 const corsOptions = {
-  origin: "http://localhost:5173", // React frontend
+  origin: "http://localhost:3000", // React frontend
   credentials: true,
-    };
+};
 
 app.use(cors(corsOptions));
     
 app.use(express.static(path.join(__dirname,"/public")))
-app.engine("ejs",ejsMate);
 app.use(methodOverride("_method"))
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "/views")); 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 
 
 connectDB();
 
-
-const sessionOptions = {
-    secret: "mysupersecretstring",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true
-    }
-}
-
-app.use(session(sessionOptions));
-app.use(flash());
-
-// iterations: specifies the number of iterations used in pbkdf2 hashing algorithm. Default: 25000
-app.use(passport.initialize());
-app.use(passport.session())
-//By default, LocalStrategy expects fields username and password in req.body
-passport.use(new LocalStrategy({ usernameField: "email" }, User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
-app.use((req,res,next)=>{
-    res.locals.success = req.flash("success");
-    res.locals.error = req.flash("error");
-    res.locals.currUser = req.user;
-    next(); 
-}) 
- 
-
 app.use("/api/listings", listingRouter);
 app.use("/api/listings/:id/reviews",reviewRouter);
 app.use("/api", userRouter);
-
-// app.use((req, res, next) => {
-//     console.log("➡️ Request URL:", req.url);
-//     next();
-// }); 
 
 // The error just means Chrome looked for a special debugging config file your server doesn’t have. Your app is fine.
 
