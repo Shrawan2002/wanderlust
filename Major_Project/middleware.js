@@ -4,24 +4,24 @@ const {listingSchema, reviewSchema} = require("./schema.js");
 const Review = require("./models/review.js");
 
 
-module.exports.isLoggedIn = (req, res, next) => {
-    // console.log(req.path,"...", req.originalUrl);
-    if (!req.isAuthenticated()) {
-        // Save original URL in session
-        req.session.redirectUrl = req.originalUrl;
-        req.flash("error", "You must be logged in first!");
-        return res.redirect("/login");
-    }
-    next();
-}
+// module.exports.isLoggedIn = (req, res, next) => {
+//     // console.log(req.path,"...", req.originalUrl);
+//     if (!req.isAuthenticated()) {
+//         // Save original URL in session
+//         req.session.redirectUrl = req.originalUrl;
+//         req.flash("error", "You must be logged in first!");
+//         return res.redirect("/login");
+//     }
+//     next();
+// }
 
-// store original url  befor login the user 
-module.exports.saveRedirectUrl = (req,res,next)=>{
-    if ( req.session.redirectUrl){
-        res.locals.redirectUrl =  req.session.redirectUrl;
-    }
-    return next();
-}
+// // store original url  befor login the user 
+// module.exports.saveRedirectUrl = (req,res,next)=>{
+//     if ( req.session.redirectUrl){
+//         res.locals.redirectUrl =  req.session.redirectUrl;
+//     }
+//     return next();
+// }
 
 // check listing owner
 module.exports.isOwner = async (req,res,next)=>{

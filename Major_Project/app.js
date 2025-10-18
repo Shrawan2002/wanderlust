@@ -5,18 +5,13 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const path = require("path");
-const methodOverride = require("method-override");
-const ejsMate = require("ejs-mate"); 
 const listingRouter = require("./routes/listing.js");
-const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-const session = require("express-session");
 const ExpressError = require("./utils/ExpressError");
-const flash = require("connect-flash");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
 const connectDB = require("./config/db.js");
+const reviewRouter = require("./routes/review.js");
+
 
 const corsOptions = {
   origin: "http://localhost:3000", // React frontend
@@ -26,7 +21,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
     
 app.use(express.static(path.join(__dirname,"/public")))
-app.use(methodOverride("_method"))
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 
@@ -34,8 +28,9 @@ app.use(express.json());
 connectDB();
 
 app.use("/api/listings", listingRouter);
-app.use("/api/listings/:id/reviews",reviewRouter);
 app.use("/api", userRouter);
+app.use("/api/listings/:id/reviews",reviewRouter);
+
 
 // The error just means Chrome looked for a special debugging config file your server doesn’t have. Your app is fine.
 

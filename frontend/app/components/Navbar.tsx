@@ -104,6 +104,14 @@ export default function Navbar() {
                     Your Profile
                   </Link>
                 </MenuItem>
+                   <MenuItem>
+                  <Link
+                    href="/create-listing "
+                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Create Listing
+                  </Link>
+                </MenuItem>
                 <MenuItem>
                   <AlertDialog>
                     <AlertDialogTrigger className="w-full text-left block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">Sign out</AlertDialogTrigger>
