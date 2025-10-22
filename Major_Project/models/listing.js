@@ -44,9 +44,15 @@ const listingSchema = new Schema({
     }
 })
 
+// ✅ Custom instance method to get all reviews for this listing
+listingSchema.methods.getReviews = async function () {
+  const reviews = await Review.find({ listing: this._id }).populate("author");
+  return reviews;
+};
+
 listingSchema.post("findOneAndDelete", async (listing)=>{
   if(listing){
-      await Review.deleteMany({_id : {$in : listing.reviews}})
+      await Review.deleteMany({listing: listing._id});
   }
 })
 const Listing = mongoose.model("Listing",listingSchema);

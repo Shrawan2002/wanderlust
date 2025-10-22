@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Navbar from "./components/Navbar";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useAppDispatch } from "@/lib/hooks";
@@ -12,37 +11,18 @@ import { Loader } from "@/components/ui/loader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import Footer from "./components/Foter";
+import { Edit, Eye, Trash2 } from "lucide-react";
 
-export default function Home() {
+export default function ListingOfUser({userId}:{userId:string}) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-
-    const init = async () => {
-      if (token) {
-        await dispatch(fetchUser());
-      } else {
-        dispatch({ type: "auth/markInitialized" });
-      }
-      setCheckingAuth(false);
-      await dispatch(fetchListing({page:1}));
-    }
-
-    init();
-  }, [dispatch]);
-
-  const { user, loading, initialized } = useSelector((state: RootState) => state.auth);
   const { listings, listingloading, currentPage, totalPages } = useSelector((state: RootState) => state.listings);
 
 
   const loadMore = () => {
     if (currentPage < totalPages) {
-      dispatch(fetchListing({page:currentPage + 1}));
+      dispatch(fetchListing({page:currentPage + 1, userId}));
     }
   }
   useEffect(() => {
@@ -51,13 +31,18 @@ export default function Home() {
     }
   }, [listings]);
 
-  if (checkingAuth || (loading && !initialized) || listingloading) {
-    return <Loader message="Loading..." />;
-  }
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    const init = async () => {
+        await dispatch(fetchListing({page:currentPage, userId}));
+    }
+
+    init();
+  }, [dispatch]);
 
   return (
     <>
-      <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {listings.length === 0 && (
           <p className="text-center text-muted-foreground col-span-full">No listings available</p>
@@ -86,12 +71,26 @@ export default function Home() {
               </CardDescription>
               <p className="mt-2 font-medium text-foreground">${listing.price.toLocaleString()}</p>
 
-              <Button
-                className="mt-4 w-full"
-                onClick={() => router.push(`/listing/${listing._id}`)}
-              >
-                View Details
-              </Button>
+              <div className="flex gap-4 mt-4">
+                <Button
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/listing/${listing._id}`)}
+                >
+                    <Eye />
+                </Button>
+                <Button
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/listing/${listing._id}/edit`)}
+                >
+                    <Edit />
+                </Button>
+                <Button
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/listing/${listing._id}`)}
+                >
+                    <Trash2 />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -103,7 +102,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      <Footer />
+      
     </>
   );
 }

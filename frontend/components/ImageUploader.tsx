@@ -1,14 +1,29 @@
-import { useState } from "react";
-import { cn } from "@/lib/utils"; // or your classNames helper
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
-export default function ImageUploader({ value, onChange, error, touched }) {
-  const [preview, setPreview] = useState<string>('');
+interface ImageUploaderProps {
+  value: File | null;
+  onChange: (file: File) => void;
+  error?: string;
+  touched?: boolean;
+  url?: string; // existing image URL for edit
+}
 
-  const handleImageChange = (e:any) => {
-    const file = e.target.files[0];
+export default function ImageUploader({ value, onChange, error, touched, url }: ImageUploaderProps) {
+  const [preview, setPreview] = useState<string>("");
+
+  // Set preview to existing URL on mount or when url changes
+  useEffect(() => {
+    if (url && !value) {
+      setPreview(url);
+    }
+  }, [url, value]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setPreview(URL.createObjectURL(file));
-      onChange(file); // Send file to parent or form
+      onChange(file);
     }
   };
 
@@ -62,9 +77,7 @@ export default function ImageUploader({ value, onChange, error, touched }) {
         )}
       </div>
 
-      {touched && error && (
-        <p className="text-sm text-red-500 mt-1">{error}</p>
-      )}
+      {touched && error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
   );
 }

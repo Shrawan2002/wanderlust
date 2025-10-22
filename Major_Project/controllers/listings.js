@@ -14,11 +14,17 @@ module.exports.index = async (req, res) => {
 
     // Get search query from query params
     const searchQuery = req.query.search || "";
+    const userQuery = req.query.userId || "";
 
+    const filter = {};
     // Build a filter object for search
-    const filter = searchQuery
-      ? { title: { $regex: searchQuery, $options: "i" } } // Case-insensitive search on 'title'
-      : {};
+    if(searchQuery){
+      filter.title = { $regex: searchQuery, $options: "i" }
+    }
+    if(userQuery){
+      filter.owner = userQuery;
+    }
+    
 
     // Fetch listings with pagination and search filter
     const allListings = await Listing.find(filter)
@@ -74,21 +80,23 @@ module.exports.createListing = async (req, res, next) => {
 module.exports.showListing = async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id)
-    .populate({
-      path: "reviews",
-      populate: {
-        path: "author",
-      }
-    }).
-    populate("owner");
-  // console.log(listing);
+  .populate("owner"); // populate owner data
+
   if (!listing) {
-    return res.send(400).json({ error: "Listing you requested for does not exist"});
+    throw new Error("Listing not found");
   }
+
+  // Fetch reviews via your model method
+  const reviews = await listing.getReviews();
+
+  const result = {
+    ...listing.toObject(), // convert mongoose doc to plain object
+    reviews,               // attach reviews array
+  };
 
   res.status(200).json({
     message: "Listing fetched successfully..",
-    listing,
+    listing:result,
   });
 }
 
@@ -107,25 +115,35 @@ module.exports.renderEditForm = async (req, res) => {
 }
 
 module.exports.updateListing = async (req, res) => {
-  let { id } = req.params;
-  // console.log(req.body.listing); 
+    const { id } = req.params;
 
-  // if(!req.body.listing){
-  //     throw new ExpressError(400, "send valid data for listing");
-  // }
+    // Optional: Validate request body
+    // if (!req.body || Object.keys(req.body).length === 0) {
+    //   return res.status(400).json({ message: "Please send valid data to update listing" });
+    // }
 
-  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+    // Update the listing
+    let listing = await Listing.findByIdAndUpdate(id, req.body, { new: true });
 
-  if (typeof (req.file) !== "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = { url, filename };
-    await listing.save();
-  }
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
+    }
 
-  req.flash("success", "Listing Updated!")
-  res.redirect(`/listings/${id}`);
-}
+    // Handle uploaded image if present
+    if (req.file) {
+      const url = req.file.path;
+      const filename = req.file.filename;
+      listing.image = { url, filename };
+      await listing.save();
+    }
+
+    // Send JSON response to frontend
+    res.json({
+      message: "Listing updated successfully",
+      listing
+    });
+};
+
 
 
 module.exports.destroyListing = async (req, res) => {

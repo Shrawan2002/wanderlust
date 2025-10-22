@@ -7,6 +7,7 @@ import {useAppDispatch} from "@/lib/hooks"
 import {fetchUser} from "@/lib/store/authSlice"
 import { Loader } from "@/components/ui/loader";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Foter";
 export default function PageLayout({
   children,
 }: {
@@ -36,6 +37,7 @@ const dispatch = useAppDispatch();
     <div >
         <Navbar />  
       {children}
+      <Footer />
     </div>
   );
 }

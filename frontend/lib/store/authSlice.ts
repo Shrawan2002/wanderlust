@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../service/api";
 
+export interface userType{_id:string, username:string, email:string}
 
 interface UserType {
-    user:{username:string, email:string}|null;
+    user:userType|null;
     loading:boolean;
     error:string|null;
     isLoggedIn:boolean;

@@ -2,7 +2,7 @@ const express = require("express");
 const wrapAsync = require("../utils/wrapAsync.js");
 // const Listing = require("../models/listing.js");
 const router = express.Router(); 
-const {validateListing} = require("../middleware.js");// destructing
+const {validateListing, isOwner} = require("../middleware.js");// destructing
 const isLoggedIn = require("../middlewares/auth.js");
 const listingController = require("../controllers/listings.js")
 const multer = require("multer");
@@ -27,13 +27,12 @@ router.route("/")
 
 router.route("/:id")
 .get( wrapAsync(listingController.showListing))
-
-// .put(
-//     isLoggedIn,
-//     // isOwner,
-//     upload.single("listing[image]"),
-//     validateListing,
-//     wrapAsync(listingController.updateListing))
+.put(
+    isLoggedIn,
+    isOwner,
+    upload.single("image"),
+    validateListing,
+    wrapAsync(listingController.updateListing))
 
 //     .delete(
 //     // isLoggedIn,

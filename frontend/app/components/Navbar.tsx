@@ -36,23 +36,21 @@ export default function Navbar() {
       dispatch(fetchListing({ page: 1, search }));
     }
   };
-  // useEffect(()=>{
-  //   const fetchSearchResult = async()=>{
-  //     await dispatch(fetchListing({page:1, search}))
-  //   }
-  //   fetchSearchResult();
-  // }, [search])
   return (
     <nav className="sticky top-0 z-50 w-full bg-gray-900 backdrop-blur-md border-b border-white/10">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         {/* LEFT: Logo */}
         <div className="flex items-center gap-2">
-          <img
-            alt="Explorer Logo"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-            className="h-8 w-auto"
-          />
-          <h3 className="text-white font-bold text-xl tracking-wide">Explorer</h3>
+          <Link
+          href="/"
+          >
+            <img
+              alt="Explorer Logo"
+              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+              className="h-8 w-auto"
+            />
+            <h3 className="text-white font-bold text-xl tracking-wide">Explorer</h3>
+          </Link>
         </div>
 
         {/* CENTER: Searchbar */}
@@ -102,14 +100,6 @@ export default function Navbar() {
                     className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
                   >
                     Your Profile
-                  </Link>
-                </MenuItem>
-                   <MenuItem>
-                  <Link
-                    href="/create-listing "
-                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    Create Listing
                   </Link>
                 </MenuItem>
                 <MenuItem>

@@ -2,13 +2,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import listingReducer from './listingSlice'
+import reviewReducer from './reviewSlice'
 // If you have other slices, import them too
 // import postReducer from "./postSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    listings: listingReducer
+    listings: listingReducer,
+    review: reviewReducer
     // posts: postReducer, // example of combining another reducer
   },
 });

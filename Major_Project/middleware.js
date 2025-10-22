@@ -24,15 +24,30 @@ const Review = require("./models/review.js");
 // }
 
 // check listing owner
-module.exports.isOwner = async (req,res,next)=>{
-    let {id} = req.params;
-    let listing = await Listing.findById(id);
-    if(!listing.owner._id.equals(res.locals.currUser._id)){
-        req.flash("error", "you are not the owner of this listing");
-        return res.redirect(`/listings/${id}`);
+module.exports.isOwner = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
     }
+
+    // Check if current user is the owner
+    if (!listing.owner._id.equals(req.user._id)) { // assuming you store logged-in user in req.user
+      return res.status(403).json({ 
+        message: "You are not the owner of this listing",
+        listingId: listing._id
+      });
+    }
+
     next();
-}
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // check review owner
 module.exports.isReviewAuthor = async (req,res,next)=>{
     let {id,reviewId} = req.params;

@@ -17,19 +17,20 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle,} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from 'next/navigation';
+import { createReview } from '@/lib/store/reviewSlice';
 
 interface PageDetailsProps {
     id: string;
 }
 
-interface Review {
-    name: string;
+export interface Review {
     comment: string;
-    date: string;
     rating: number;
+    listingId: string;
 }
 
 const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
@@ -37,22 +38,28 @@ const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
     const { listingDetail, listingloading, listingerror } = useSelector(
         (state: RootState) => state.listings
     );
+    const { reviewLoading, reviewError, review } = useSelector((state: RootState) => state.review)
+    const { user } = useSelector((state: RootState) => state.auth);
 
     const [reviews, setReviews] = useState<Review[]>([]);
     const [reviewName, setReviewName] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [rating, setRating] = useState(0);
+    const router = useRouter();
 
     useEffect(() => {
         dispatch(listingById(id));
     }, [dispatch, id]);
 
-    const newReview: Review = {
-        comment: reviewComment,
-        rating, // add this
-        date: new Date().toLocaleDateString(),
-    };
+    // const newReview: Review = {
+    //     comment: reviewComment,
+    //     rating, // add this
+    //     date: new Date().toLocaleDateString(),
+    // };
 
+    useEffect(()=>{
+        console.log(listingDetail)
+    }, [listingDetail])
     if (listingloading) {
         return (
             <div className="container max-w-6xl mx-auto py-10 space-y-6">
@@ -82,17 +89,23 @@ const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
 
     const imageUrl = listingDetail.image?.url || "/default-image.png";
 
-    const handleReviewSubmit = (e: React.FormEvent) => {
+    const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!reviewComment) return;
-
         const newReview: Review = {
-            name: reviewName,
             comment: reviewComment,
-            date: new Date().toLocaleDateString(),
-            rating  
+            // date: new Date().toLocaleDateString(),
+            rating,
+            listingId: id
         };
-        setReviews([newReview, ...reviews]);
+        if (!user) {
+            localStorage.setItem('review', JSON.stringify(newReview))
+            router.push('/login');
+            return;
+        }
+        await dispatch(createReview(newReview));
+        // setReviews([newReview, ...reviews]);
+        await dispatch(listingById(id));
         setReviewName('');
         setReviewComment('');
     };
@@ -143,6 +156,9 @@ const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
                     {/* Review Form */}
                     <Card className="shadow-lg border border-muted rounded-2xl p-6 space-y-4">
                         <CardTitle>Leave a Review</CardTitle>
+                        {reviewError && (
+                           reviewError || 'Something went wrong!'
+                        )}
                         <form onSubmit={handleReviewSubmit} className="space-y-4">
                             {/* Star Rating */}
                             <div className="flex space-x-2">
@@ -166,59 +182,65 @@ const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
                                 onChange={(e) => setReviewComment(e.target.value)}
                             />
 
-                            <Button
-                                type="submit"
-                                className="bg-pink-500 text-white w-full rounded-full py-3"
-                            >
-                                Submit Review
+                            <Button type="submit" className="w-40  p-6" disabled={reviewLoading}>
+                                {reviewLoading ? (
+                                    // Example loading spinner
+                                    <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin mx-auto"></div>
+                                ) : (
+                                    'Submit Review'
+                                )}
                             </Button>
                         </form>
                     </Card>
 
                     {/* Reviews List */}
                     <div className="space-y-6">
-                        {reviews.length === 0 && (
+                        {listingDetail?.reviews.length === 0 && (
                             <p className="text-gray-500 text-center py-6">
-                            No reviews yet. Be the first to review!
+                                No reviews yet. Be the first to review!
                             </p>
                         )}
 
-                        {reviews.map((rev, idx) => (
+                        {listingDetail?.reviews.map((rev, idx) => (
                             <Card key={idx} className="border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
-                            <div className="flex items-start space-x-4">
-                                {/* Reviewer avatar */}
-                                <div className="flex-shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
-                                    {rev.name ? rev.name.charAt(0) : 'U'}
-                                </div>
-                                </div>
+                                <div className="flex items-start space-x-4">
+                                    {/* Reviewer avatar */}
+                                    <div className="flex-shrink-0">
+                                        <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
+                                            {user?.username[0]}
+                                        </div>
+                                    </div>
 
-                                {/* Review content */}
-                                <div className="flex-1 space-y-1">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="font-semibold text-gray-800">{rev.name || 'Anonymous'}</h4>
-                                    <span className="text-gray-400 text-sm">{rev.date}</span>
-                                </div>
+                                    {/* Review content */}
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-semibold text-gray-800">
+                                                {user?.username}
+                                            </h4>
+                                            <span className="text-gray-400 text-sm">
+                                                {rev.formattedDate}
+                                            </span>
+                                        </div>
 
-                                {/* Star rating */}
-                                <div className="flex items-center space-x-1">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                    <span
-                                        key={star}
-                                        className={`text-xl ${star <= rev.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                                    >
-                                        ★
-                                    </span>
-                                    ))}
-                                </div>
+                                        {/* Star rating */}
+                                        <div className="flex items-center space-x-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <span
+                                                    key={star}
+                                                    className={`text-xl ${star <= rev.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                >
+                                                    ★
+                                                </span>
+                                            ))}
+                                        </div>
 
-                                {/* Comment */}
-                                <p className="text-gray-700 mt-2">{rev.comment}</p>
+                                        {/* Comment */}
+                                        <p className="text-gray-700 mt-2">{rev.comment}</p>
+                                    </div>
                                 </div>
-                            </div>
                             </Card>
                         ))}
-                        </div>
+                    </div>
 
                 </div>
 
@@ -250,7 +272,7 @@ const PageDetails: React.FC<PageDetailsProps> = ({ id }) => {
                                     <option>2 guests</option>
                                     <option>3 guests</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-3 text-gray-500 pointer-events-none" />
+                                {/* <ChevronDown className="absolute right-3 top-3 text-gray-500 pointer-events-none" /> */}
                             </div>
                             <Button className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-full py-3">
                                 Reserve

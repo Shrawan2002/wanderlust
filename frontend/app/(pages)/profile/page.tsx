@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import Link from "next/link"
+import { ArrowBigDown, ArrowRight, Reply } from "lucide-react"
 
 export default function ProfilePage() {
   const { user, loading, initialized } = useSelector((state: RootState) => state.auth)
@@ -115,6 +117,26 @@ export default function ProfilePage() {
               {updating ? "Updating..." : "Update Password"}
             </Button>
           </div>
+            <div className="flex flex-col">
+              <div className="my-2">
+                <Link
+                  href="/create-listing "
+                  className="px-4 py-2 flex text-sm text-blue-900 hover:text-blue-700"
+                >
+                  Create Listing
+                  <ArrowRight className="ml-1" size={16} />
+                </Link>
+              </div>
+              <div className="my-2">
+                <Link
+                  href={`/view-listing/${user._id}`}
+                  className="px-4 py-2 flex text-sm text-blue-900 hover:text-blue-700"
+                >
+                  View Listing
+                  <ArrowRight className="ml-1" size={16} />
+                </Link>
+              </div>
+            </div>
         </div>
       </Card>
     </motion.div>

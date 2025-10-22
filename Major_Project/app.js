@@ -29,7 +29,7 @@ connectDB();
 
 app.use("/api/listings", listingRouter);
 app.use("/api", userRouter);
-app.use("/api/listings/:id/reviews",reviewRouter);
+app.use("/api/listings/reviews",reviewRouter);
 
 
 // The error just means Chrome looked for a special debugging config file your server doesn’t have. Your app is fine.

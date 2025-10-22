@@ -1,20 +1,28 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../service/api";
-import build from "next/dist/build";
-import { ListingFormData } from "@/app/(pages)/create-listing/page";
+import { ListingFormData } from "@/app/components/ListingForm";
+import { userType } from "./authSlice";
 
+export interface FetchReviewSchema {
+    comment: string,
+    _id:string,
+    author: userType,
+    rating: number,
+    formattedDate:string
+}
 export interface Listing {
     image: {
         filename: string,
         url: string,
-    },
+    }|null,
     geometry: {
         coordinates: []
     },
     _id: string,
     title: string,
     description: string,
-    price: number,
+    price: string,
+    reviews: FetchReviewSchema[],
     location: string,
     country: string,
     review: [],
@@ -41,10 +49,10 @@ const initialValue: ListingStateSchmea = {
 
 export const fetchListing = createAsyncThunk(
     'fetchlisting',
-    async (data: { page: number; search?: string }, thunkAPI) => {
+    async (data: { page: number; search?: string, userId?:string }, thunkAPI) => {
         try {
             // Only append `search` if it's non-empty
-            const query = `page=${data.page}` + (data.search ? `&search=${encodeURIComponent(data.search)}` : '');
+            const query = `page=${data.page}` + (data.search ? `&search=${encodeURIComponent(data.search)}` : '') + (data.userId ? `&userId=${encodeURIComponent(data.userId)}` : '');
             const res = await api.get(`listings?${query}`);
             return res.data;
         } catch (error: any) {
@@ -58,6 +66,23 @@ export const createListing = createAsyncThunk(
     async (data: ListingFormData, thunkAPI) => {
         try {
             const res = await api.post("/listings", data, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            return res.data;
+        } catch (error: any) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data || { message: error.message }
+            );
+        }
+    }
+);
+export const updateListing = createAsyncThunk(
+    "create/listing",
+    async ({id, data}:{id:string,data: ListingFormData}, thunkAPI) => {
+        try {
+            const res = await api.put(`/listings/${id}`, data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
